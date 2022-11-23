@@ -78,3 +78,10 @@ The following provides more details on the included cryptographic software:
 This software uses Apache Commons Crypto (https://commons.apache.org/proper/commons-crypto/) to
 support authentication, and encryption and decryption of data sent across the network between
 services.
+
+----------
+## 启动步骤
+1. 先在项目目录下创建一个conf目录，并从distribution拷贝broker.conf和logback_broker.xml和logback_namesrv.xml到conf目录下
+2. 启动Namesrv:添加环境变量ROCKETMQ_HOME，运行NamesrvStartup类即可启动NameServer
+3. 启动Broker:添加环境变量ROCKETMQ_HOME，运行BrokerStartup类即可启动Broker。运行时需要通过参数 -c 指定配置文件（配置文件中的内容按需修改 ）
+4. Namesrv和Broker都启动完成后，就可以使用本地启动的Namesrv和Broker进行测试了
