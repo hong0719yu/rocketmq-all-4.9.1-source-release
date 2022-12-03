@@ -19,12 +19,14 @@ package org.apache.rocketmq.namesrv;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -54,6 +56,7 @@ public class NamesrvStartup {
     public static NamesrvController main0(String[] args) {
 
         try {
+            //P0 Namesrv的核心组件，创建Namesrv控制器
             NamesrvController controller = createNamesrvController(args);
             start(controller);
             String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
@@ -69,19 +72,27 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController createNamesrvController(String[] args) throws IOException, JoranException {
+        // 设置当前框架版本
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
         //PackageConflictDetect.detectFastjson();
-
+        // 检测命令行参数
         Options options = ServerUtil.buildCommandlineOptions(new Options());
         commandLine = ServerUtil.parseCmdLine("mqnamesrv", args, buildCommandlineOptions(options), new PosixParser());
+        // 检测出命令行参数错误后，commandLine == null 为true
         if (null == commandLine) {
             System.exit(-1);
             return null;
         }
 
+        //P0 Namesrv的核心组件（NamesrvConfig、NettyServerConfig、NamesrvController）
+
+        // NamesrvConfig 设置了几个路径：rocketmqHome、kvConfigPath、configStorePath
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
+        // NettyServerConfig 设置了多个线程数以及信号量，channel的空闲时间-120、SocketSndBuf-65535、SocketRcvBuf-65535
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
+        // ServerConfig直接指定9876端口
         nettyServerConfig.setListenPort(9876);
+        // 解析 -c 和 -p 参数
         if (commandLine.hasOption('c')) {
             String file = commandLine.getOptionValue('c');
             if (file != null) {
@@ -107,11 +118,13 @@ public class NamesrvStartup {
 
         MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), namesrvConfig);
 
+        // 检测是否设置了 ROCKETMQ_HOME环境变量
         if (null == namesrvConfig.getRocketmqHome()) {
             System.out.printf("Please set the %s variable in your environment to match the location of the RocketMQ installation%n", MixAll.ROCKETMQ_HOME_ENV);
             System.exit(-2);
         }
 
+        // 日志相关
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(lc);
