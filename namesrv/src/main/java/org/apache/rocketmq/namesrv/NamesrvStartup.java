@@ -56,8 +56,9 @@ public class NamesrvStartup {
     public static NamesrvController main0(String[] args) {
 
         try {
-            //P0 Namesrv的核心组件，创建Namesrv控制器
+            //P0 创建Namesrv的三个核心组件：NamesrvConfig、NettyServerConfig、NamesrvController
             NamesrvController controller = createNamesrvController(args);
+            //P0 启动NamesrvController组件
             start(controller);
             String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
             log.info(tip);
@@ -84,11 +85,9 @@ public class NamesrvStartup {
             return null;
         }
 
-        //P0 Namesrv的核心组件（NamesrvConfig、NettyServerConfig、NamesrvController）
-
-        // NamesrvConfig 设置了几个路径：rocketmqHome、kvConfigPath、configStorePath
+        //P1 创建NamesrvConfig,设置了几个路径：rocketmqHome、kvConfigPath、configStorePath
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
-        // NettyServerConfig 设置了多个线程数以及信号量，channel的空闲时间-120、SocketSndBuf-65535、SocketRcvBuf-65535
+        //P1 创建NettyServerConfig,设置了多个线程数以及信号量，channel的空闲时间-120、SocketSndBuf-65535、SocketRcvBuf-65535
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         // ServerConfig直接指定9876端口
         nettyServerConfig.setListenPort(9876);
@@ -136,9 +135,10 @@ public class NamesrvStartup {
         MixAll.printObjectProperties(log, namesrvConfig);
         MixAll.printObjectProperties(log, nettyServerConfig);
 
+        //P1 创建NamesrvController,并初始化了一些属性：定时任务执行器、配置管理器、路由信息管理器......等
         final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
-        // remember all configs to prevent discard
+        // remember all configs to prevent discard  加载通过参数 -c 指定的配置
         controller.getConfiguration().registerConfig(properties);
 
         return controller;
@@ -150,12 +150,15 @@ public class NamesrvStartup {
             throw new IllegalArgumentException("NamesrvController is null");
         }
 
+        // Namesrv的初始化，主要是加载配置、创建NettyRemotingServer以及一些定时任务
         boolean initResult = controller.initialize();
+        // 初始化失败就调用shutdown方法将开启的资源关闭掉
         if (!initResult) {
             controller.shutdown();
             System.exit(-3);
         }
 
+        // Namesrv服务关闭的钩子Hook，在服务正常关闭时会执行
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -164,6 +167,7 @@ public class NamesrvStartup {
             }
         }));
 
+        // 真正启动NamesrvController，前面都是启动前的准备工作
         controller.start();
 
         return controller;
