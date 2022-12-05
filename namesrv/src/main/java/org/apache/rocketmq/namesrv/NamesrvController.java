@@ -78,6 +78,7 @@ public class NamesrvController {
         // 加载配置到configTable中
         this.kvConfigManager.load();
 
+        // 创建Netty服务
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
 
         // 创建Remoting相关的定时任务执行器
