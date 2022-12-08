@@ -165,6 +165,7 @@ public class NamesrvController {
         this.remotingServer.start();
 
         if (this.fileWatchService != null) {
+            // 启动文件检测服务
             this.fileWatchService.start();
         }
     }

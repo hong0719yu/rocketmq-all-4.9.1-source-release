@@ -193,6 +193,7 @@ public class BrokerController {
         this.producerManager = new ProducerManager();
         this.clientHousekeepingService = new ClientHousekeepingService(this);
         this.broker2Client = new Broker2Client(this);
+        // config/subscriptionGroup.json
         this.subscriptionGroupManager = new SubscriptionGroupManager(this);
         this.brokerOuterAPI = new BrokerOuterAPI(nettyClientConfig);
         this.filterServerManager = new FilterServerManager(this);
@@ -271,7 +272,6 @@ public class BrokerController {
         // 加载磁盘文件
         result = result && this.messageStore.load();
 
-        // 下面是一系列的线程池以及定时任务
         if (result) {
             // Netty网络组件。Broker既需要是Netty的服务端，又需要是Netty的客户端
             this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.clientHousekeepingService);
@@ -279,6 +279,10 @@ public class BrokerController {
             // 10911 - 2 = 10909
             fastConfig.setListenPort(nettyServerConfig.getListenPort() - 2);
             this.fastRemotingServer = new NettyRemotingServer(fastConfig, this.clientHousekeepingService);
+
+            /*
+             * 下面是一系列的线程池以及周期性任务
+             * */
             // 发送消息的线程池
             this.sendMessageExecutor = new BrokerFixedThreadPoolExecutor(
                     this.brokerConfig.getSendMessageThreadPoolNums(), /* Math.min(Runtime.getRuntime().availableProcessors(), 4) */
@@ -357,10 +361,10 @@ public class BrokerController {
             //P2 Broker注册Processor
             this.registerProcessor();
 
-            // 后台定时任务
+            // 后台任务
             final long initialDelay = UtilAll.computeNextMorningTimeMillis() - System.currentTimeMillis();
             final long period = 1000 * 60 * 60 * 24;
-            //P3 定时进行broker统计的任务 （每天执行一次，在凌晨执行 00:00:00）
+            //P3 周期性进行broker统计的任务 （每天执行一次，在凌晨执行 00:00:00）
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -372,7 +376,7 @@ public class BrokerController {
                 }
             }, initialDelay, period, TimeUnit.MILLISECONDS);
 
-            //P3 定时进行将consumer消费Offset持久化到磁盘的任务（服务启动时延迟 10s 执行，后续每 5s 执行一次）
+            //P3 周期性进行将consumer消费Offset持久化到磁盘的任务（服务启动时延迟 10s 执行，后续每 5s 执行一次）
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -384,7 +388,7 @@ public class BrokerController {
                 }
             }, 1000 * 10, this.brokerConfig.getFlushConsumerOffsetInterval(), TimeUnit.MILLISECONDS);
 
-            //P3 定时进行consumer的filter持久化任务。这里可以看到，消费者的filter是被下推到了Broker来执行的。（服务启动时延迟 10s 执行，后续每 10s 执行一次）
+            //P3 周期性进行consumer的filter持久化任务。这里可以看到，消费者的filter是被下推到了Broker来执行的。（服务启动时延迟 10s 执行，后续每 10s 执行一次）
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -396,7 +400,7 @@ public class BrokerController {
                 }
             }, 1000 * 10, 1000 * 10, TimeUnit.MILLISECONDS);
 
-            //P3 定时进行Broker保护任务。（服务启动时延迟 3min 执行，后续每 3min 执行一次）
+            //P3 周期性进行Broker保护任务。（服务启动时延迟 3min 执行，后续每 3min 执行一次）
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -408,7 +412,7 @@ public class BrokerController {
                 }
             }, 3, 3, TimeUnit.MINUTES);
 
-            //P3 定时打印水位线。（服务启动时延迟 10s 执行，后续每 1s 执行一次）
+            //P3 周期性打印水位线。（服务启动时延迟 10s 执行，后续每 1s 执行一次）
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -420,7 +424,7 @@ public class BrokerController {
                 }
             }, 10, 1, TimeUnit.SECONDS);
 
-            //P3 定时进行落后commitlog分发的任务。（服务启动时延迟 10s 执行，后续每 60s 执行一次）
+            //P3 周期性进行落后commitlog分发的任务。（服务启动时延迟 10s 执行，后续每 60s 执行一次）
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
                 @Override
@@ -936,7 +940,7 @@ public class BrokerController {
             this.registerBrokerAll(true, false, true);
         }
 
-        //P3 定时注册所有的Broker，Broker的心跳注册任务，需要深入解读。（服务启动时延迟 10s 执行，后续默认每 30s 执行一次）
+        //P3 周期性注册所有的Broker，Broker的心跳注册任务，需要深入解读。（服务启动时延迟 10s 执行，后续默认每 30s 执行一次）
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
