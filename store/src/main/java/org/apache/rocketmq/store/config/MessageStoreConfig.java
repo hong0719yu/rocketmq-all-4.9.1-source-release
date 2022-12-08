@@ -17,47 +17,50 @@
 package org.apache.rocketmq.store.config;
 
 import java.io.File;
+
 import org.apache.rocketmq.common.annotation.ImportantField;
 import org.apache.rocketmq.store.ConsumeQueue;
 
 public class MessageStoreConfig {
-    //The root directory in which the log data is kept
+    //The root directory in which the log data is kept.     日志数据所在的目录---C:\Users\Administrator\store
     @ImportantField
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "store";
 
-    //The directory in which the commitlog is kept
+    //The directory in which the commitlog is kept.     commitlog文件所在的目录---C:\Users\Administrator\store\commitlog
     @ImportantField
     private String storePathCommitLog = System.getProperty("user.home") + File.separator + "store"
-        + File.separator + "commitlog";
+            + File.separator + "commitlog";
 
-    // CommitLog file size,default is 1G
+    // CommitLog file size,default is 1G  CommitLog文件的大小，默认为1G
     private int mappedFileSizeCommitLog = 1024 * 1024 * 1024;
-    // ConsumeQueue file size,default is 30W
+    // ConsumeQueue file size,default is 30W    CommitLog文件的ConsumeQueue大小，默认 30W*20=600W
     private int mappedFileSizeConsumeQueue = 300000 * ConsumeQueue.CQ_STORE_UNIT_SIZE;
-    // enable consume queue ext
+    // enable consume queue ext  是否支持ConsumeQueue扩展文件
     private boolean enableConsumeQueueExt = false;
-    // ConsumeQueue extend file size, 48M
+    // ConsumeQueue extend file size, 48M  ConsumeQueue扩展文件的大小，默认是48M
     private int mappedFileSizeConsumeQueueExt = 48 * 1024 * 1024;
     // Bit count of filter bit map.
-    // this will be set by pipe of calculate filter bit map.
+    // this will be set by pipe of calculate filter bit map.  bitMap的长度。与ConsumeQueue扩展文件配合使用。
     private int bitMapLengthConsumeQueueExt = 64;
 
     // CommitLog flush interval
-    // flush data to disk
+    // flush data to disk  CommitLog文件中的数据刷盘的时间间隔，默认是500ms
     @ImportantField
     private int flushIntervalCommitLog = 500;
 
     // Only used if TransientStorePool enabled
     // flush data to FileChannel
+    // 该属性只有在 TransientStorePool 可用时才会被使用，将CommitLog中的数据刷到 FileChannel，默认时间间隔是200ms
     @ImportantField
     private int commitIntervalCommitLog = 200;
 
     /**
      * introduced since 4.0.x. Determine whether to use mutex reentrantLock when putting message.<br/>
+     * Put 消息时是否使用ReentrantLock：PutMessageReentrantLock
      */
     private boolean useReentrantLockWhenPutMessage = true;
 
-    // Whether schedule flush
+    // Whether schedule flush  是否定时
     @ImportantField
     private boolean flushCommitLogTimed = true;
     // ConsumeQueue flush interval
@@ -142,6 +145,7 @@ public class MessageStoreConfig {
     private int transientStorePoolSize = 5;
     private boolean fastFailIfNoBufferInStorePool = false;
 
+    // 是否开启DLedger集群的 CommitLog 方式
     private boolean enableDLegerCommitLog = false;
     private String dLegerGroup;
     private String dLegerPeers;
@@ -621,7 +625,7 @@ public class MessageStoreConfig {
      */
     public boolean isTransientStorePoolEnable() {
         return transientStorePoolEnable && FlushDiskType.ASYNC_FLUSH == getFlushDiskType()
-            && BrokerRole.SLAVE != getBrokerRole();
+                && BrokerRole.SLAVE != getBrokerRole();
     }
 
     public void setTransientStorePoolEnable(final boolean transientStorePoolEnable) {

@@ -18,6 +18,7 @@ package org.apache.rocketmq.common;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import org.apache.rocketmq.common.annotation.ImportantField;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.common.constant.PermName;
@@ -29,7 +30,9 @@ import org.apache.rocketmq.remoting.common.RemotingUtil;
 public class BrokerConfig {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
 
+    // RocketMQ的home目录路径
     private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
+    // Namesrv地址
     @ImportantField
     private String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
     @ImportantField
@@ -38,11 +41,14 @@ public class BrokerConfig {
     @ImportantField
     private String brokerName = localHostName();
     @ImportantField
+    // 默认的Broker集群名称
     private String brokerClusterName = "DefaultCluster";
     @ImportantField
     private long brokerId = MixAll.MASTER_ID;
     private int brokerPermission = PermName.PERM_READ | PermName.PERM_WRITE;
+    // 默认Topic的队列数
     private int defaultTopicQueueNums = 8;
+    // 是否允许自动创建Topic
     @ImportantField
     private boolean autoCreateTopicEnable = true;
 
@@ -53,8 +59,10 @@ public class BrokerConfig {
     private boolean autoCreateSubscriptionGroup = true;
     private String messageStorePlugIn = "";
     @ImportantField
+    // 开启 Trace 后默认的Topic名称
     private String msgTraceTopicName = TopicValidator.RMQ_SYS_TRACE_TOPIC;
     @ImportantField
+    // 是否开启 Trace Topic
     private boolean traceTopicEnable = false;
     /**
      * thread numbers for send message thread pool.
@@ -83,6 +91,7 @@ public class BrokerConfig {
     private boolean rejectTransactionMessage = false;
     @ImportantField
     private boolean fetchNamesrvAddrByAddressServer = false;
+    // 各种线程池中队列的长度
     private int sendThreadPoolQueueCapacity = 10000;
     private int pullThreadPoolQueueCapacity = 100000;
     private int replyThreadPoolQueueCapacity = 10000;
@@ -167,12 +176,13 @@ public class BrokerConfig {
 
     /**
      * The maximum number of times the message was checked, if exceed this value, this message will be discarded.
+     * 事务消息校验回查的最大次数，默认为15次。超过这个次数后，消息将会被丢弃
      */
     @ImportantField
     private int transactionCheckMax = 15;
 
     /**
-     * Transaction message check interval.
+     * Transaction message check interval.  事务消息校验回查的时间间隔，默认是60s
      */
     @ImportantField
     private long transactionCheckInterval = 60 * 1000;

@@ -87,7 +87,7 @@ public class NamesrvStartup {
 
         //P1 创建NamesrvConfig,设置了几个路径：rocketmqHome、kvConfigPath、configStorePath
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
-        //P1 创建NettyServerConfig,设置了多个线程数以及信号量，channel的空闲时间-120、SocketSndBuf-65535、SocketRcvBuf-65535
+        //P1 创建NettyServerConfig,设置了Server的多个线程数以及信号量，channel的空闲时间-120、SocketSndBuf-65535、SocketRcvBuf-65535..等
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         // ServerConfig直接指定9876端口
         nettyServerConfig.setListenPort(9876);
@@ -135,7 +135,7 @@ public class NamesrvStartup {
         MixAll.printObjectProperties(log, namesrvConfig);
         MixAll.printObjectProperties(log, nettyServerConfig);
 
-        //P1 创建NamesrvController,并初始化了一些属性：定时任务执行器、配置管理器、路由信息管理器......等
+        //P1 创建NamesrvController,并设置了一些属性：定时任务执行器、配置管理器、路由信息管理器......等
         final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
         // remember all configs to prevent discard  加载通过参数 -c 指定的配置
@@ -158,7 +158,7 @@ public class NamesrvStartup {
             System.exit(-3);
         }
 
-        // Namesrv服务关闭的钩子Hook，在服务正常关闭时会执行
+        // Namesrv服务关闭的钩子Hook，在服务正常关闭时会执行(优雅关闭，释放资源)
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
             @Override
             public Void call() throws Exception {

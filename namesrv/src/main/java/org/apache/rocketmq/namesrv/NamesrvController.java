@@ -88,7 +88,7 @@ public class NamesrvController {
         // 注册处理器：NettyRequestProcessor ---> DefaultRequestProcessor
         this.registerProcessor();
 
-        // 启动延迟5s，后续每隔10s执行一次，用于扫描不活跃的Broker
+        // 启动延迟5s，后续每隔10s执行一次，用于扫描不活跃的Broker（2min没有发送心跳就判定为不活跃）
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
@@ -161,6 +161,7 @@ public class NamesrvController {
     }
 
     public void start() throws Exception {
+        // 启动Netty服务
         this.remotingServer.start();
 
         if (this.fileWatchService != null) {
