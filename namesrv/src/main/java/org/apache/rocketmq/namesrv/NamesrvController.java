@@ -85,7 +85,7 @@ public class NamesrvController {
         this.remotingExecutor =
                 Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
 
-        // 注册处理器：NettyRequestProcessor ---> DefaultRequestProcessor
+        // 注册处理器：NettyRequestProcessor ---> DefaultRequestProcessor，用于处理Broker发送的请求
         this.registerProcessor();
 
         // 启动延迟5s，后续每隔10s执行一次，用于扫描不活跃的Broker（2min没有发送心跳就判定为不活跃）

@@ -936,7 +936,7 @@ public class BrokerController {
             startProcessorByHa(messageStoreConfig.getBrokerRole());
             // 开启定时任务，定时处理Slave节点的同步任务
             handleSlaveSynchronize(messageStoreConfig.getBrokerRole());
-            // 注册所有的Broker
+            // 注册所有的Broker，强制注册
             this.registerBrokerAll(true, false, true);
         }
 
@@ -984,9 +984,18 @@ public class BrokerController {
         doRegisterBrokerAll(true, false, topicConfigSerializeWrapper);
     }
 
+    /**
+     * Broker的心跳注册
+     *
+     * @param checkOrderConfig 是否校验
+     * @param oneway           是否是单向消息发送
+     * @param forceRegister    是否强制注册
+     */
     public synchronized void registerBrokerAll(final boolean checkOrderConfig, boolean oneway, boolean forceRegister) {
+        // 创建一个topic包装类
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
 
+        // 这里比较有趣，如果该broker没有读写权限，那么会新建一个临时的topicConfigTable，再set进包装类
         if (!PermName.isWriteable(this.getBrokerConfig().getBrokerPermission())
                 || !PermName.isReadable(this.getBrokerConfig().getBrokerPermission())) {
             ConcurrentHashMap<String, TopicConfig> topicConfigTable = new ConcurrentHashMap<String, TopicConfig>();
@@ -999,6 +1008,9 @@ public class BrokerController {
             topicConfigWrapper.setTopicConfigTable(topicConfigTable);
         }
 
+        // 这里才是比较关键的地方。先判断是否需要注册，然后调用doRegisterBrokerAll方法真正去注册。
+        // forceRegister 默认为true，因此 doRegisterBrokerAll 一定会执行
+        // needRegister 方法用于判断是否需要更新注册的Broker信息
         if (forceRegister || needRegister(this.brokerConfig.getBrokerClusterName(),
                 this.getBrokerAddr(),
                 this.brokerConfig.getBrokerName(),
@@ -1045,6 +1057,7 @@ public class BrokerController {
                                  final int timeoutMills) {
 
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
+        // 判断是否需要更新注册Broker信息。如果 topicConfigWrapper 中的 dataVersion 与 Namesrv中的 dataVersion 不同，就要注册
         List<Boolean> changeList = brokerOuterAPI.needRegister(clusterName, brokerAddr, brokerName, brokerId, topicConfigWrapper, timeoutMills);
         boolean needRegister = false;
         for (Boolean changed : changeList) {
