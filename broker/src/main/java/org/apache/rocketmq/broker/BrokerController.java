@@ -456,7 +456,7 @@ public class BrokerController {
                 }, 1000 * 10, 1000 * 60 * 2, TimeUnit.MILLISECONDS);
             }
 
-            // 处理开启DLedger后的一些操作
+            // 处理未开启DLedger后的一些操作
             if (!messageStoreConfig.isEnableDLegerCommitLog()) {
                 if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {
                     if (this.messageStoreConfig.getHaMasterAddress() != null && this.messageStoreConfig.getHaMasterAddress().length() >= 6) {
@@ -466,7 +466,7 @@ public class BrokerController {
                         this.updateMasterHAServerAddrPeriodically = true;
                     }
                 } else {
-                    //P3 定时打印Slave节点落后Master节点的字节数。（服务启动时延迟 10s 执行，后续每 60s 执行一次）
+                    //P3 定时打印Slave节点落后Master节点的字节数（）。（服务启动时延迟 10s 执行，后续每 60s 执行一次）
                     this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                         @Override
                         public void run() {
@@ -987,7 +987,7 @@ public class BrokerController {
     /**
      * Broker的心跳注册
      *
-     * @param checkOrderConfig 是否校验
+     * @param checkOrderConfig 是否更新TopicConfig中的order属性为true
      * @param oneway           是否是单向消息发送
      * @param forceRegister    是否强制注册
      */

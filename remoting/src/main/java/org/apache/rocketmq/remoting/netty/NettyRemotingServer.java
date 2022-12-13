@@ -239,6 +239,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             this.nettyEventExecutor.start();
         }
 
+        //P3 定时清理过期请求。（服务启动时延迟 3s 执行，后续每 1s 执行一次）
         this.timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override
