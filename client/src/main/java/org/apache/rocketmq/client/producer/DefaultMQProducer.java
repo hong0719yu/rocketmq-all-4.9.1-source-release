@@ -74,7 +74,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     private String producerGroup;
 
     /**
-     * Just for testing or demo program
+     * Just for testing or demo program  仅用于测试或演示程序
      */
     private String createTopicKey = TopicValidator.AUTO_CREATE_TOPIC_KEY_TOPIC;
 
@@ -97,6 +97,8 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      * Maximum number of retry to perform internally before claiming sending failure in synchronous mode. </p>
      *
      * This may potentially cause message duplication which is up to application developers to resolve.
+     *
+     * 在同步模式下声明发送失败之前在内部执行的最大重试次数。这可能会导致消息重复，这需要应用程序开发人员来解决。
      */
     private int retryTimesWhenSendFailed = 2;
 
@@ -271,6 +273,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      *
      * @throws MQClientException if there is any unexpected error.
      */
+    //P0 [Producer]启动普通消息生产者
     @Override
     public void start() throws MQClientException {
         this.setProducerGroup(withNamespace(this.producerGroup));
