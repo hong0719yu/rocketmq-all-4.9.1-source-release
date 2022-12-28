@@ -403,6 +403,7 @@ public abstract class RebalanceImpl {
             }
         }
 
+        // 往 PullMessageService 的队列pullMessageQueue中分发分配给该消费者的队列，消费者需要给被分配的队列发送拉取消息的请求
         this.dispatchPullRequest(pullRequestList);
 
         return changed;

@@ -235,11 +235,11 @@ public class MQClientInstance {
                     this.mQClientAPIImpl.start();
                     // 启动各种周期性定时任务 Start various schedule tasks
                     this.startScheduledTask();
-                    // 启动拉取消息服务 Start pull service
+                    // 启动拉取消息服务，针对Consumer。 Start pull service
                     this.pullMessageService.start();
-                    // 启动Consumer的负载均衡服务 Start rebalance service
+                    // 启动Consumer的负载均衡服务，针对Consumer。 Start rebalance service
                     this.rebalanceService.start();
-                    // 启动发送消息服务 Start push service
+                    // 启动发送消息服务，针对Producer。 Start push service
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);
                     log.info("the client factory [{}] start OK", this.clientId);
                     this.serviceState = ServiceState.RUNNING;
@@ -469,6 +469,7 @@ public class MQClientInstance {
         }
     }
 
+    //P1 [Producer || Consumer]客户端Client给Broker发送心跳
     public void sendHeartbeatToAllBrokerWithLock() {
         if (this.lockHeartbeat.tryLock()) {
             try {

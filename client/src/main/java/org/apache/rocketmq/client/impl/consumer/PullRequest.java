@@ -19,9 +19,13 @@ package org.apache.rocketmq.client.impl.consumer;
 import org.apache.rocketmq.common.message.MessageQueue;
 
 public class PullRequest {
+    // 当前消费者组
     private String consumerGroup;
+    // 消费队列信息
     private MessageQueue messageQueue;
+    // 当前队列信息
     private ProcessQueue processQueue;
+    // 接下来要消费的offset进度
     private long nextOffset;
     private boolean previouslyLocked = false;
 

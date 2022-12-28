@@ -21,6 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.common.ServiceThread;
@@ -32,12 +33,12 @@ public class PullMessageService extends ServiceThread {
     private final LinkedBlockingQueue<PullRequest> pullRequestQueue = new LinkedBlockingQueue<PullRequest>();
     private final MQClientInstance mQClientFactory;
     private final ScheduledExecutorService scheduledExecutorService = Executors
-        .newSingleThreadScheduledExecutor(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(r, "PullMessageServiceScheduledThread");
-            }
-        });
+            .newSingleThreadScheduledExecutor(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "PullMessageServiceScheduledThread");
+                }
+            });
 
     public PullMessageService(MQClientInstance mQClientFactory) {
         this.mQClientFactory = mQClientFactory;
@@ -77,9 +78,12 @@ public class PullMessageService extends ServiceThread {
     }
 
     private void pullMessage(final PullRequest pullRequest) {
+        // 从 mQClientFactory 中获取消费者信息
         final MQConsumerInner consumer = this.mQClientFactory.selectConsumer(pullRequest.getConsumerGroup());
         if (consumer != null) {
+            // 这里强制成 DefaultMQPushConsumerImpl，是为了做一个限制。如果不是 DefaultMQPushConsumerImpl 就会报错
             DefaultMQPushConsumerImpl impl = (DefaultMQPushConsumerImpl) consumer;
+            // 走一把，拉取消息
             impl.pullMessage(pullRequest);
         } else {
             log.warn("No matched consumer for the PullRequest {}, drop it", pullRequest);
@@ -92,7 +96,9 @@ public class PullMessageService extends ServiceThread {
 
         while (!this.isStopped()) {
             try {
+                // 从队列里面获取请求信息
                 PullRequest pullRequest = this.pullRequestQueue.take();
+                // 获取消息
                 this.pullMessage(pullRequest);
             } catch (InterruptedException ignored) {
             } catch (Exception e) {
